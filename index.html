@@ -147,6 +147,8 @@
   <a href="store.html">🛒 Store </a>
   <a href="profile.html">👤 Profile</a>
   <a href="cart.html">🛒 My Cart</a>
+  <!-- லாக் அவுட் பட்டன் இங்கே சேர்க்கப்பட்டுள்ளது -->
+  <a href="#" id="logoutBtn" style="color: var(--danger);">🚪 Logout</a>
 </div>
 
 <div id="overlay" class="overlay"></div>
@@ -250,6 +252,14 @@
 
     document.getElementById("menuBtn").onclick = window.toggleMenu;
     document.getElementById("overlay").onclick = window.toggleMenu;
+
+    // லாக் அவுட் செயல்பாடு
+    document.getElementById("logoutBtn").onclick = (e) => {
+        e.preventDefault();
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("aquaUser");
+        window.location.href = "login.html";
+    };
 
 
     // --- 3. DASHBOARD LOAD DATA ---
