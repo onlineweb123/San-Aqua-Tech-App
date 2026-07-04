@@ -214,35 +214,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- 1. MONITOR SECTION ---
-    const userLocal = localStorage.getItem("aquaUser") || "Guest";
-    const currentPage = window.location.pathname.split("/").pop() || "index.html";
-    const startTime = Date.now();
 
-    // விசிட் பதிவு
-    try {
-        const visitRef = ref(db, 'analytics/visits');
-        push(visitRef, {
-            username: userLocal,
-            page: currentPage,
-            time: serverTimestamp(),
-            device: navigator.userAgent
-        });
-    } catch(e) { console.log("Monitor error"); }
-
-    // வெளியேறும் நேரப் பதிவு
-    window.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === 'hidden') {
-            const duration = (Date.now() - startTime) / 1000;
-            const exitRef = ref(db, 'analytics/exits');
-            push(exitRef, {
-                username: userLocal,
-                page: currentPage,
-                duration: duration + "s",
-                time: serverTimestamp()
-            });
-        }
-    });
 
     // --- 2. SIDEBAR LOGIC ---
     window.toggleMenu = () => {
