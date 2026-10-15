@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AMC Status | San Aqua Tech</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+
+  <!-- Login Redirect Open -->
+    <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+        window.location.href = "login.html";
+    }
+    </script>
+  <!-- Login Redirect End -->
+
+    <style>
+        :root { 
+            --bg: #f8fbff; 
+            --card: #ffffff; 
+            --border: #e2e8f0; 
+            --primary: #0077b6; 
+            --accent: #00b4d8; 
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --glass: rgba(255, 255, 255, 0.8);
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main); overflow-x: hidden; }
+
+        #pageLoader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            width: 100%;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        header { 
+            height: 70px; display: flex; align-items: center; justify-content: center; 
+            position: fixed; top: 0; left: 0; right: 0; 
+            background: var(--glass); backdrop-filter: blur(12px);
+            z-index: 100; border-bottom: 1px solid var(--border);
+        }
+
+        .menu-btn { 
+            position: absolute; left: 20px; font-size: 24px; 
+            background: #f1f5f9; border: none; color: var(--text-main); 
+            cursor: pointer; width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .header-title { font-size: 18px; font-weight: 700; color: var(--primary); }
+
+        .sidebar { 
+            width: 280px; background: var(--card); position: fixed; top: 0; bottom: 0; left: -300px; 
+            padding-top: 80px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 110; 
+            box-shadow: 20px 0 50px rgba(0,0,0,0.05);
+        }
+        .sidebar.open { left: 0; }
+        .sidebar a { display: flex; align-items: center; padding: 16px 24px; text-decoration: none; color: var(--text-main); font-weight: 500; font-size: 15px; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); display: none; z-index: 105; backdrop-filter: blur(4px); }
+        .overlay.show { display: block; }
+
+        .main { padding: 90px 20px 100px 20px; max-width: 600px; margin: 0 auto; }
+
+        .active-card {
+            background: #fff; border-radius: 28px; padding: 30px; border: 1px solid var(--border);
+            text-align: center; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        .active-icon { font-size: 50px; margin-bottom: 10px; }
+        .expiry-box { background: #f0fdf4; padding: 15px; border-radius: 18px; margin: 20px 0; border: 1px solid #dcfce7; }
+
+        .plan-card {
+            background: var(--card); border-radius: 30px; padding: 0;
+            border: 1px solid var(--border); margin-bottom: 25px;
+            box-shadow: 0 20px 40px rgba(0, 119, 182, 0.08);
+            position: relative; overflow: hidden; display: none;
+        }
+        .card-header { background: linear-gradient(135deg, var(--primary), #023e8a); padding: 30px 20px; text-align: center; color: white; }
+        .plan-badge { background: #ffd700; color: #000; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; display: inline-block; margin-bottom: 10px; }
+        .plan-name { font-size: 22px; font-weight: 700; margin: 0; }
+        .plan-price { font-size: 36px; font-weight: 800; margin: 10px 0; }
+        .plan-price span { font-size: 16px; opacity: 0.8; font-weight: 400; }
+
+        .card-body { padding: 25px; }
+        .section-title { font-size: 13px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+        .features-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px; }
+        .feature-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 15px; background: #f8fafc; border: 1px solid #f1f5f9; }
+        .f-icon { width: 35px; height: 35px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); font-size: 18px; }
+        .f-text { font-size: 14px; font-weight: 600; color: var(--text-main); text-align: left;}
+        .f-text small { display: block; font-weight: 400; color: var(--text-sub); font-size: 12px; }
+
+        .note-card { background: #fff9f0; border-radius: 18px; padding: 15px; display: flex; gap: 12px; align-items: flex-start; margin-bottom: 25px; text-align: left; }
+        .buy-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--primary); color: white; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; display: block; text-align: center; text-decoration: none; box-shadow: 0 10px 20px rgba(0, 119, 182, 0.2); }
+
+        .features-list { list-style: none; padding: 0; margin-bottom: 20px; text-align: left; }
+        .features-list li { padding: 10px 0; font-size: 14px; border-bottom: 1px dotted var(--border); display: flex; align-items: center; gap: 10px; color: var(--text-main); }
+
+        .bottom { height: 75px; position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; align-items: center; background: var(--glass); backdrop-filter: blur(12px); border-top: 1px solid var(--border); z-index: 100; }
+        .bottom button { background: none; border: none; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; color: var(--text-sub); cursor: pointer;}
+        .bottom button.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<header>
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <div class="header-title">Annual Maintenance</div>
+</header>
+
+<div id="sidebar" class="sidebar">
+  <a href="index.html">🏠 Dashboard</a>
+  <a href="service.html">🛠 Service</a>
+  <a href="store.html">🛒 Store </a>
+  <a href="profile.html">👤 Profile</a>
+</div>
+<div id="overlay" class="overlay"></div>
+
+<div class="main">
+    <div id="pageLoader">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; color: var(--text-sub); font-size: 14px; font-weight: 600;">Loading Details...</p>
+    </div>
+
+    <div id="activeView" class="active-card">
+        <div class="active-icon">🛡️</div>
+        <h2 style="color: var(--success); margin: 0;">AMC is Active!</h2>
+        <p style="color: var(--text-sub); font-size: 14px;">Your machine is under San Care protection.</p>
+
+        <div class="expiry-box">
+            <p style="margin: 0; font-size: 12px; color: var(--text-sub); text-transform: uppercase;">Plan Valid Until</p>
+            <h3 id="displayExpiryDate" style="margin: 5px 0 0 0; color: var(--text-main); font-size: 22px;">-- / -- / ----</h3>
+        </div>
+
+        <ul class="features-list">
+            <li>✅ Free Inline Filter Replacement</li>
+            <li>✅ Priority Repair Service</li>
+            <li>✅ San VIP Care </li>
+        </ul> 
+
+        <a href="https://wa.me/919750598865?text=I%20need%20service%20for%20my%20Active%20AMC" class="buy-btn" style="background: var(--success); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">Request AMC Service</a>
+    </div>
+
+    <div id="purchaseView" class="plan-card">
+        <div class="card-header">
+            <div class="plan-badge">POPULAR CHOICE</div>
+            <h3 class="plan-name">Full Inline AMC</h3>
+            <div class="plan-price">₹3,800 <span>/ year</span></div>
+        </div>
+
+        <div class="card-body">
+            <div class="section-title">Maintenance Includes</div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="f-icon">🫧</div>
+                    <div class="f-text">Full Filter Set <small>Sediment & Pre-Carbon Change</small></div>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">🛡️</div>
+                    <div class="f-text">RO Membrane <small>Original High TDS Replacement</small></div>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">💧</div>
+                    <div class="f-text">Post Carbon <small>Polishing for better taste</small></div>
+                </div>
+            </div>
+
+            <div class="note-card">
+                <span style="font-size: 20px;">💡</span>
+                <p style="margin:0; font-size:12px; color:#854d0e;">This AMC covers all <b>Internal Inline Filters</b>. We repair or replace it at no extra cost.</p>
+            </div>
+
+            <a href="https://wa.me/919750598865?text=I want to buy San Care AMC Plan (3800)" class="buy-btn">Activate Plan Now</a>
+        </div>
+    </div>
+</div>
+
+<div class="bottom">
+    <button onclick="location.href='index.html'"><span style="font-size:22px">🏠</span>Home</button>
+    <button onclick="location.href='service.html'"><span style="font-size:22px">⚒️</span>Service</button>
+    <button onclick="location.href='store.html'"><span style="font-size:22px">🛒</span>Store</button>
+    <button onclick="location.href='profile.html'"><span style="font-size:22px">👤</span>Profile</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, serverTimestamp, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // San Aqua Tech - Firebase Config
+    const firebaseConfig = {
+        databaseURL: "https://san-aqua-tech-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- 1. MONITOR SECTION ---
+    const userLocal = localStorage.getItem("aquaUser") || "Guest";
+    const currentPage = window.location.pathname.split("/").pop() || "amc.html";
+    const startTime = Date.now();
+
+    try {
+        const visitRef = ref(db, 'analytics/visits');
+        push(visitRef, {
+            username: userLocal,
+            page: currentPage,
+            time: serverTimestamp(),
+            device: navigator.userAgent
+        });
+    } catch(e) {}
+
+    window.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === 'hidden') {
+            const duration = (Date.now() - startTime) / 1000;
+            const exitRef = ref(db, 'analytics/exits');
+            push(exitRef, {
+                username: userLocal,
+                page: currentPage,
+                duration: duration + "s",
+                time: serverTimestamp()
+            });
+        }
+    });
+
+    // --- 2. SIDEBAR LOGIC ---
+    window.toggleMenu = () => {
+        document.getElementById("sidebar").classList.toggle("open");
+        document.getElementById("overlay").classList.toggle("show");
+    };
+    document.getElementById("menuBtn").onclick = window.toggleMenu;
+    document.getElementById("overlay").onclick = window.toggleMenu;
+
+    // --- 3. AMC STATUS LOAD ---
+    async function loadAMCStatus() {
+        const loader = document.getElementById("pageLoader");
+        const activeView = document.getElementById("activeView");
+        const purchaseView = document.getElementById("purchaseView");
+
+        const user = localStorage.getItem("aquaUser");
+
+        if(!user) {
+            purchaseView.style.display = "block";
+            loader.style.display = "none";
+            return;
+        }
+
+        try {
+            const snapshot = await get(child(ref(db), `users/${user}`));
+
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                if(userData.lastAMCDate) {
+                    const startDate = new Date(userData.lastAMCDate);
+                    const expiryDate = new Date(startDate);
+                    expiryDate.setFullYear(startDate.getFullYear() + 1);
+
+                    if(new Date() < expiryDate) {
+                        activeView.style.display = "block";
+                        document.getElementById("displayExpiryDate").innerText = expiryDate.toLocaleDateString('en-GB');
+                    } else {
+                        purchaseView.style.display = "block";
+                    }
+                } else {
+                    purchaseView.style.display = "block";
+                }
+            } else {
+                purchaseView.style.display = "block";
+            }
+        } catch (error) {
+            purchaseView.style.display = "block";
+        } finally {
+            loader.style.display = "none";
+        }
+    }
+
+    loadAMCStatus(); 
+
+    // Text copy மற்றும் selection-ஐ தடுப்பதற்கான code
+    document.addEventListener('copy', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+            return true;
+        }
+        e.preventDefault();
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+            return true;
+        }
+        e.preventDefault();
+    });
+
+    // CSS வழியாக Selection-ஐ தடுத்தல்
+    const protectionStyle = document.createElement('style');
+    protectionStyle.innerHTML = `
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        a, button {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
+        }
+    `;
+    document.head.appendChild(protectionStyle);
+</script>
+</body>
+</html>
