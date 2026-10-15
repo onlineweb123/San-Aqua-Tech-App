@@ -147,7 +147,6 @@
   <a href="store.html">🛒 Store </a>
   <a href="profile.html">👤 Profile</a>
   <a href="cart.html">🛒 My Cart</a>
-  <!-- லாக் அவுட் பட்டன் இங்கே சேர்க்கப்பட்டுள்ளது -->
   <a href="#" id="logoutBtn" style="color: var(--danger);">🚪 Logout</a>
 </div>
 
@@ -195,12 +194,20 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, serverTimestamp, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // --- Service Worker Registration for PWA ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registered!'))
+                .catch(err => console.log('Service Worker registration failed: ', err));
+        });
+    }
+
     // லாகின் சரிபார்ப்பு
     if (localStorage.getItem("isLoggedIn") !== "true") {
         window.location.href = "login.html";
     }
 
-    // ஸ்கிரீன்ஷாட்டில் உள்ளபடி San Aqua Tech-க்கான புதிய Firebase Config இணைக்கப்பட்டுள்ளது
     const firebaseConfig = {
         apiKey: "AIzaSyAqyyGJt_t0ztknMudFVLmo6relkEa284g",
         authDomain: "meadi-aqua-tech.firebaseapp.com",
@@ -213,8 +220,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
-
 
     // --- 2. SIDEBAR LOGIC ---
     window.toggleMenu = () => {
@@ -232,7 +237,6 @@
         localStorage.removeItem("aquaUser");
         window.location.href = "login.html";
     };
-
 
     // --- 3. DASHBOARD LOAD DATA ---
     async function loadDashboard() {
@@ -313,7 +317,6 @@
     document.body.style.webkitUserSelect = "none";
     document.body.style.msUserSelect = "none";
     document.body.style.mozUserSelect = "none";
-
 </script>
 </body>
 </html>
